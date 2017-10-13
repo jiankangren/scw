@@ -144,268 +144,261 @@ delete(handles.figure1)
 function goToGoal_Callback(hObject, eventdata, handles)
 
 global emergencyBrakesOn;
-emergencyBrakesOn = 0;
-follower = nhrInit(10,2.5);
-leader = nhrInit(200,2.5);
-leaderEstimate = nhrInit(100,2.5);
-followingDistance = 100; %TODO: change according to speed
-cla(handles.axes1);
-cla(handles.axes2);
-canvasInit(handles.axes1);
 
-%Plot initial config
-followerPlot = nhrPlot(follower, 'r');
-leaderPlot = nhrPlot(leader, 'g');
-
-%set one goal
-goal = nhrSetGoals(1);
-%plot goal
-%nhrPlotGoals(goal);
-%run simulation
-%Init Control Parameters
 dt = 0.01;
-t = 0;
-xRealFollower= [];
-xRealLeader = [];
-
-error(1) = sqrt((leader.x - follower.x)^2 +  (leader.y - follower.y)^2);
-leaderDesiredVel = 26;
-velIntegral = 0;
-prevVelError = 0;
-cruiseIntegral = 0;
-prevCruiseError = 0;
-leaderCruiseIntegral = 0;
-prevLeaderCruiseError = 0;
-%sensor noises
-gpsVar = 1; % 1 meter
-encoderVar = 0.01;
-lidarVar  = 0.0009; % 3 cm
-radarVar  = 0.25;
-%input noise
-varInput = 0.01;
-varLeaderInput = 6.76; % 2.67^2
-%initial state
-u = [0;0];
-uLeader(:,1) = [0;0];
-xRealFollower(:,1) = [10;2.5;0;0];
-xRealLeader(:,1) = [200;2.5;0;0];
-x(:,1) = xRealFollower;
-xLeader(:,1) = [200;2.5;0;0;0;0];
-
-F = [1  0  dt 0 ;
-     0  1  0  dt;
-     0  0  1  0 ;
-     0  0  0  1];
-leaderF = [1  0  dt 0  (dt^2)/2 0;
-           0  1  0  dt 0        (dt^2)/2;
-           0  0  1  0  dt       0;
-           0  0  0  1  0        dt;
-           0  0  0  0  1        0
-           0  0  0  0  0        1];
-
-B = [0.5*(dt^2) 0 ;  
-    0           0.5*(dt^2);
-    dt          0 ;
-    0           dt];
-
-P = [10 0  0  0 ;
-     0  10  0  0 ;
-     0  0  1  0 ;
-     0  0  0  1];
-leaderP = [1 0  0  0 0 0;
-           0  1 0  0 0 0;
-           0  0  10  0 0 0;
-           0  0  0  10 0 0;
-           0  0  0  0 10 0;
-           0  0  0  0 0 10];
-
-H = [1  0  0  0 ;
-     0  1  0  0 ;
-     1  0  0  0 ;
-     0  1  0  0];
-leaderH =  [1  0  0  0 0 0;
-            0  1  0  0 0 0;
-            1  0  0  0 0 0;
-            0  1  0  0 0 0];
-Q = [0  0  0         0 ;
-     0  0  0         0 ;
-     0  0  varInput  0 ;
-     0  0  0         varInput];
- 
-leaderQ = [0  0  0  0  0 0;
-           0  0  0  0  0 0;
-           0  0  0  0  0 0;
-           0  0  0  0  0 0;
-           0  0  0  0  varLeaderInput 0;
-           0  0  0  0   0 varLeaderInput];
- 
-R = [gpsVar  0  0     0 ;
-     0  gpsVar  0     0 ;
-     0  0  encoderVar     0 ;
-     0  0     0   encoderVar];
- 
-leaderR =[lidarVar  0 0   0     ;
-          0  lidarVar 0   0     ;
-          0  0  radarVar  0     ;
-          0  0     0   radarVar ];
-index = 2;
-v(1) = 0;
-while(true)
-    %calculate the actual state based on previous input.
-     xRealFollower(:,index) = (F*xRealFollower(:,index-1) + B*u);
-     xRealLeader(:,index) = (F*xRealLeader(:,index-1) + B*uLeader(:,index-1)); 
-    % generate sensor mesaurements with noise for follower.
-    Z(:,index) = [xRealFollower(1,index) + normrnd(0,sqrt(gpsVar));
-                  xRealFollower(2,index) + normrnd(0,sqrt(gpsVar));
-                  xRealFollower(1,index) + normrnd(0,sqrt(encoderVar));
-                  xRealFollower(2,index) + normrnd(0,sqrt(encoderVar))
-                 ];
-    % generate sensor mesaurements with noise for leader. 
-    leaderZ(:,index) = [xRealLeader(1,index) + normrnd(0,sqrt(lidarVar));
-                  xRealLeader(2,index) + normrnd(0,sqrt(lidarVar));
-                  xRealLeader(1,index) + normrnd(0,sqrt(radarVar));
-                  xRealLeader(2,index) + normrnd(0,sqrt(radarVar))
-                 ];
-    % prediction for follower
-    P1 = F*P*F' + Q;
-    S  = H*P1*H' + R;
-    % prediction for leader
-    leaderP1 = leaderF*leaderP*leaderF' + leaderQ;
-    leaderS  = leaderH*leaderP1*leaderH' + leaderR;
-    % measurements update
-    %kalman gain for follower
-    K = P1*H'*inv(S);
-    %kalman gain for leader
-    leaderK = leaderP1*leaderH'*inv(leaderS);
-    % state covariance update for follower
-    P = P1 - K*H*P1;
-    % state covariance update for leader
-    leaderP = leaderP1 - leaderK*leaderH*leaderP1
-    % state update for follower
-    x(:,index) = F*x(:,index-1) + B*u +  K*(Z(:,index)-H*(F*x(:,index-1)+B*u)); 
-    % state update for leader
-    xLeader(:,index) = leaderF*xLeader(:,index-1)  +  leaderK*(leaderZ(:,index)-leaderH*(leaderF*xLeader(:,index-1))); 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    followerEstimate.x = x(1,index);
-    followerEstimate.y = x(2,index);
-    followerEstimate.v = sqrt(x(3,index)^2 + x(4,index)^2);
-    
-    leaderEstimate.x = xLeader(1,index);
-    leaderEstimate.y = xLeader(2,index);
-    leaderEstimate.v = sqrt(xLeader(3,index)^2 + xLeader(4,index)^2);
-    
-    leader.x = xRealLeader(1,index);
-    leader.y = xRealLeader(2,index);
-    leader.v = sqrt(xRealLeader(3,index)^2 + xRealLeader(4,index)^2);
-    v(index) = followerEstimate.v;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Leader Controller %
-    if(emergencyBrakesOn == 1)
-        if(leader.v > 1)
-            uLeader(:,index)= [-9.8 ;0];
-        else
-            uLeader(:,index) = [0;0];
-        end
-    else
-        % leader PID controller to do cruise control
-        leaderCruiseError = leaderDesiredVel - leader.v;
-        leaderCruiseIntegral = leaderCruiseIntegral + leaderCruiseError*dt;
-        leaderCruiseDerivative = (leaderCruiseError - prevLeaderCruiseError)/dt;
-
-        [leader, ux, uy] = nhrCruiseOneGoal(goal, leader, leaderCruiseError, leaderCruiseIntegral, leaderCruiseDerivative);
-        % construct input vector with noise
-        uLeader(:,index)= [ux ;
-             uy;
-        ];
-    end
-    prevLeaderCruiseError = leaderCruiseError;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Follower Controller %
-    if(sqrt((leaderEstimate.x - followerEstimate.x)^2 +  (leaderEstimate.y - followerEstimate.y)^2) <= followingDistance )
-    % Follow the leaders velocity
-        cruiseError = leaderEstimate.v - followerEstimate.v;
-        cruiseIntegral = cruiseIntegral + cruiseError*dt;
-        cruiseDerivative = (cruiseError - prevCruiseError)/dt;
+% follower external sensor noises
+lidarVar  = 0.1; % 3 cm
+% 0.2 mph -> 11 mph
+%radarVar  = linspace(0.0447, 4.47);
+radarVar = ones(1,100)*0.25;
+% braking threshold
+brakingAcc = linspace(5,15,10);
+%brakingAcc = ones(1,100)*9.8;
+% braking threshold percentiles
+%%% 0.9   -> Z = 1.281552
+%%% 0.99  -> Z = 2.326348
+%%% 0.999 -> Z = 3.090232
+threshold = [1.281552; 2.326348;3.090232];
+for i = 1:10 % brakingAcc
+    for j = 1:10 % number of samples 
+        for k = 1:3 % number of percentiles
         
-        [followerEstimate, ux, uy] = nhrCruiseOneGoal(leaderEstimate, followerEstimate, cruiseError, cruiseIntegral,cruiseDerivative);
-        % construct input vector with noise
-        u = [ux ;%+ normrnd(0,sqrt(varInput));
-             0 %+ normrnd(0,sqrt(varInput))
-        ];
-        if(leaderEstimate.v < 1)
+            emergencyBrakesOn = 0;
+            follower = nhrInit(10,2.5);
+            leader = nhrInit(200,2.5);
+            leaderEstimate = nhrInit(100,2.5);
+            followingDistance = 100; %TODO: change according to speed
+          %  cla(handles.axes1);
+          %  cla(handles.axes2);
+          %  canvasInit(handles.axes1);
+
+            %Plot initial config
+           % followerPlot = nhrPlot(follower, 'r');
+           % leaderPlot = nhrPlot(leader, 'g');
+
+            %set one goal at 1000 m
+            goal = nhrSetGoals(1);
+
+            %Init Control Parameters
+
+            t = 0;
+            xRealFollower= [];
+            xRealLeader = [];
+            error(1) = sqrt((leader.x - follower.x)^2 +  (leader.y - follower.y)^2);
+            leaderDesiredVel = 26;
+            velIntegral = 0;
+            prevVelError = 0;
+            cruiseIntegral = 0;
+            prevCruiseError = 0;
+            leaderCruiseIntegral = 0;
+            prevLeaderCruiseError = 0;
+            filterConvergence = 0;
+            % follower inertial sensor noises
+            gpsVar = 1; % 1 meter
+            encoderVar = 0.01;
+            %input noise
+            varInput = 0.01;
+            varLeaderInput = 6.76; % 2.67^2
+            %initial state
             u = [0;0];
+            uLeader(:,1) = [0;0];
+            xRealFollower(:,1) = [10;2.5;0;0];
+            xRealLeader(:,1) = [200;2.5;0;0];
+            x(:,1) = xRealFollower;
+            xLeader(:,1) = [200;2.5;0;0;0;0];
+
+            F = [1  0  dt 0 ;
+                 0  1  0  dt;
+                 0  0  1  0 ;
+                 0  0  0  1];
+            leaderF = [1  0  dt 0  (dt^2)/2 0;
+                       0  1  0  dt 0        (dt^2)/2;
+                       0  0  1  0  dt       0;
+                       0  0  0  1  0        dt;
+                       0  0  0  0  1        0
+                       0  0  0  0  0        1];
+
+            B = [0.5*(dt^2) 0 ;  
+                0           0.5*(dt^2);
+                dt          0 ;
+                0           dt];
+
+            P = [10 0  0  0 ;
+                 0  10  0  0 ;
+                 0  0  1  0 ;
+                 0  0  0  1];
+            leaderP = [1 0  0  0 0 0;
+                       0  1 0  0 0 0;
+                       0  0  10  0 0 0;
+                       0  0  0  10 0 0;
+                       0  0  0  0 10 0;
+                       0  0  0  0 0 10];
+            prevLeaderP = leaderP;
+            H = [1  0  0  0 ;
+                 0  1  0  0 ;
+                 1  0  0  0 ;
+                 0  1  0  0];
+            leaderH =  [1  0  0  0 0 0;
+                        0  1  0  0 0 0;
+                        1  0  0  0 0 0;
+                        0  1  0  0 0 0];
+            Q = [0  0  0         0 ;
+                 0  0  0         0 ;
+                 0  0  varInput  0 ;
+                 0  0  0         varInput];
+
+            leaderQ = [0  0  0  0  0 0;
+                       0  0  0  0  0 0;
+                       0  0  0  0  0 0;
+                       0  0  0  0  0 0;
+                       0  0  0  0  varLeaderInput 0;
+                       0  0  0  0   0 varLeaderInput];
+
+            R = [gpsVar  0  0     0 ;
+                 0  gpsVar  0     0 ;
+                 0  0  encoderVar     0 ;
+                 0  0     0   encoderVar];
+
+            leaderR =[lidarVar  0 0   0     ;
+                      0  lidarVar 0   0     ;
+                      0  0  radarVar(i)  0     ;
+                      0  0     0   radarVar(i) ];
+            index = 2;
+            v(1) = 0;
+            reactionTime(i,j,k) = 0;
+            while(true)
+                %calculate the actual state based on previous input.
+                 xRealFollower(:,index) = (F*xRealFollower(:,index-1) + B*u);
+                 xRealLeader(:,index) = (F*xRealLeader(:,index-1) + B*uLeader(:,index-1)); 
+                % generate sensor mesaurements with noise for follower.
+                Z(:,index) = [xRealFollower(1,index) + normrnd(0,sqrt(gpsVar));
+                              xRealFollower(2,index) + normrnd(0,sqrt(gpsVar));
+                              xRealFollower(1,index) + normrnd(0,sqrt(encoderVar));
+                              xRealFollower(2,index) + normrnd(0,sqrt(encoderVar))
+                             ];
+                % generate sensor mesaurements with noise for leader. 
+                leaderZ(:,index) = [xRealLeader(1,index) + normrnd(0,sqrt(lidarVar));
+                              xRealLeader(2,index) + normrnd(0,sqrt(lidarVar));
+                              xRealLeader(1,index) + normrnd(0,sqrt(radarVar(i)));
+                              xRealLeader(2,index) + normrnd(0,sqrt(radarVar(i)))
+                             ];
+                % prediction for follower
+                P1 = F*P*F' + Q;
+                S  = H*P1*H' + R;
+                % prediction for leader
+                leaderP1 = leaderF*leaderP*leaderF' + leaderQ;
+                leaderS  = leaderH*leaderP1*leaderH' + leaderR;
+                % measurements update
+                %kalman gain for follower
+                K = P1*H'*inv(S);
+                %kalman gain for leader
+                leaderK = leaderP1*leaderH'*inv(leaderS);
+                % state covariance update for follower
+                P = P1 - K*H*P1;
+                % state covariance update for leader
+                leaderP = leaderP1 - leaderK*leaderH*leaderP1;
+                % state update for follower
+                x(:,index) = F*x(:,index-1) + B*u +  K*(Z(:,index)-H*(F*x(:,index-1)+B*u)); 
+                % state update for leader
+                xLeader(:,index) = leaderF*xLeader(:,index-1)  +  leaderK*(leaderZ(:,index)-leaderH*(leaderF*xLeader(:,index-1))); 
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Follower's braking condition
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                if(emergencyBrakesOn ==1)
+                    if( (xLeader(5,index) - sqrt(leaderP(5,5)) * threshold(k)) <= -brakingAcc(i))
+                        break;
+                    end
+                end
+                followerEstimate.x = x(1,index);
+                followerEstimate.y = x(2,index);
+                followerEstimate.v = sqrt(x(3,index)^2 + x(4,index)^2);
+
+                leaderEstimate.x = xLeader(1,index);
+                leaderEstimate.y = xLeader(2,index);
+                leaderEstimate.v = sqrt(xLeader(3,index)^2 + xLeader(4,index)^2);
+
+                leader.x = xRealLeader(1,index);
+                leader.y = xRealLeader(2,index);
+                leader.v = sqrt(xRealLeader(3,index)^2 + xRealLeader(4,index)^2);
+                v(index) = followerEstimate.v;
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Leader Controller %
+                if(emergencyBrakesOn == 1)
+                        uLeader(:,index)= [-brakingAcc(i) ;0];
+                        reactionTime(i,j,k) = reactionTime(i,j,k) + 1;
+                else
+                    % leader PID controller to do cruise control
+                    leaderCruiseError = leaderDesiredVel - leader.v;
+                    leaderCruiseIntegral = leaderCruiseIntegral + leaderCruiseError*dt;
+                    leaderCruiseDerivative = (leaderCruiseError - prevLeaderCruiseError)/dt;
+
+                    [leader, ux, uy] = nhrCruiseOneGoal(goal, leader, leaderCruiseError, leaderCruiseIntegral, leaderCruiseDerivative);
+                    % construct input vector with noise
+                    uLeader(:,index)= [ux ;
+                         uy;
+                    ];
+                end
+                prevLeaderCruiseError = leaderCruiseError;
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Follower Controller %
+                % Maintain a following distance to the leader
+                velError = error(index-1) - followingDistance;
+                velIntegral = velIntegral + velError*dt;
+                velDerivative = (velError - prevVelError)/dt;
+
+                % calculate u using PID
+                [followerEstimate, ux, uy] = nhrNavOneGoal(leaderEstimate, followerEstimate, velError,velIntegral,velDerivative);
+                % construct input vector with noise
+                u = [ux ;%+ normrnd(0,sqrt(varInput));
+                     0%uy %+ normrnd(0,sqrt(varInput))
+                ];
+                prevVelError = velError;
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                error(index) = sqrt((leader.x - follower.x)^2 +  (leader.y - follower.y)^2);
+                t = dt + t;
+                index = index + 1;
+                % check if state covariance matrix has converged. If yes, apply the
+                % brakes
+                if(sum(sum(leaderP == prevLeaderP))>=30)
+                    emergencyBrakesOn = 1;
+                end
+                prevLeaderP = leaderP;
+               % pause(dt);
+            end
         end
-        prevCruiseError = cruiseError;
-    else  
-        % Maintain a following distance to the leader
-        velError = error(index-1) - followingDistance;
-        velIntegral = velIntegral + velError*dt;
-        velDerivative = (velError - prevVelError)/dt;
-
-        % calculate u using PID
-        [followerEstimate, ux, uy] = nhrNavOneGoal(leaderEstimate, followerEstimate, velError,velIntegral,velDerivative);
-        % construct input vector with noise
-        u = [ux ;%+ normrnd(0,sqrt(varInput));
-             0%uy %+ normrnd(0,sqrt(varInput))
-        ];
-        prevVelError = velError;
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %plot follower position and velocity
-    follower.x = xRealFollower(1,index);
-    follower.y = xRealFollower(2,index);
-    follower.theta =  atan2(xRealFollower(4,index),xRealFollower(3,index));
-    follower.v = xRealFollower(3,index);
-    axes(handles.axes1);
-    followerPlot = nhrUpdateRobotPlot(follower, followerPlot, 'r');
-    leaderPlot = nhrUpdateRobotPlot(leader, leaderPlot, 'g');
-    %plot sensor data for follower
-    plot(Z(1,index), Z(2,index), '.', 'Color', 'b');
-    plot(Z(3,index), Z(4,index), '.', 'Color', 'g');
-    % plot follower position estimate
-    plot(x(1,index), x(2,index), '.', 'Color', 'y'); 
-    % plot leader position estimate
-    plot(leaderEstimate.x, leaderEstimate.y, '.', 'Color', 'y'); 
-    axes(handles.axes2); %set the current axes to axes2
-    ylabel('velocity (m/s)');
-    xlabel('time (sec)');
-    plot(t,follower.v,'.','color', 'g');
-    hold on
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    error(index) = sqrt((leader.x - follower.x)^2 +  (leader.y - follower.y)^2);
-    
-    t = dt + t;
-    index = index + 1;
-    pause(dt);
 end
-hold off
-axes(handles.axes1);
-hold off
-%plotting the speed of the follower and distance to the goal (estimated)
-time = 0:dt:t+dt;
-time = time(1:length(v));
-figure, plot(time,v); xlabel('time (sec)'); ylabel('speed (m/s)'); title('estimated speed of the follower');
-figure, plot(time,error); xlabel('time (sec)'); ylabel('Distance to goal (m)'); title('Estimated distance to goal over time');
-
-% plotting the estimated x and y values of the follower
-figure, plot(time,x(1,:)); xlabel('time (sec)'); ylabel('estimated x (m)'); title('estimated x position of the follower');
-figure, plot(time,x(2,:)); xlabel('time (sec)'); ylabel('estimated y (m)'); title('estimated y position of the follower');
-
-%plotting the estimated x and y position together with the sensory
-%measurements and the actual values for comparison.
-figure, plot(time,x(1,:),'b'); hold on;
-plot(time,Z(1,:), 'r'); hold on;
-plot(time,Z(3,:), 'g'); hold on; 
-plot(time,xRealFollower(1,:), 'k'); xlabel('time (sec)'); ylabel('x position (m)'); hold on; 
-legend('estimated x position', 'sensor 1','sensor 2', 'actual x');
-
-figure, plot(time,x(2,:),'b'); hold on;
-plot(time,Z(2,:), 'r'); hold on;
-plot(time,Z(4,:), 'g'); hold on; 
-plot(time,xRealFollower(2,:), 'k'); xlabel('time (sec)'); ylabel('y position (m)'); hold on; 
-legend('estimated y position', 'sensor 1','sensor 2', 'actual y');
+figure, hold on;
+for k = 1:3
+   errorbar(brakingAcc, mean(reactionTime(:,:,k),2)', std(reactionTime(:,:,k),1,2)')
+end
+legend('90th Percentile','99th Percentile', '999th Percentile');
+%hold off
+% axes(handles.axes1);
+% hold off
+% %plotting the speed of the follower and distance to the goal (estimated)
+% time = 0:dt:t+dt;
+% time = time(1:length(v));
+% figure, plot(time,v); xlabel('time (sec)'); ylabel('speed (m/s)'); title('estimated speed of the follower');
+% figure, plot(time,error); xlabel('time (sec)'); ylabel('Distance to goal (m)'); title('Estimated distance to goal over time');
+% 
+% % plotting the estimated x and y values of the follower
+% figure, plot(time,x(1,:)); xlabel('time (sec)'); ylabel('estimated x (m)'); title('estimated x position of the follower');
+% figure, plot(time,x(2,:)); xlabel('time (sec)'); ylabel('estimated y (m)'); title('estimated y position of the follower');
+% 
+% %plotting the estimated x and y position together with the sensory
+% %measurements and the actual values for comparison.
+% figure, plot(time,x(1,:),'b'); hold on;
+% plot(time,Z(1,:), 'r'); hold on;
+% plot(time,Z(3,:), 'g'); hold on; 
+% plot(time,xRealFollower(1,:), 'k'); xlabel('time (sec)'); ylabel('x position (m)'); hold on; 
+% legend('estimated x position', 'sensor 1','sensor 2', 'actual x');
+% 
+% figure, plot(time,x(2,:),'b'); hold on;
+% plot(time,Z(2,:), 'r'); hold on;
+% plot(time,Z(4,:), 'g'); hold on; 
+% plot(time,xRealFollower(2,:), 'k'); xlabel('time (sec)'); ylabel('y position (m)'); hold on; 
+% legend('estimated y position', 'sensor 1','sensor 2', 'actual y');
 
 
 % --- Executes on button press in pushbutton11.
