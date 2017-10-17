@@ -1,7 +1,7 @@
 function [robot,vx,vy]= nhrCruiseOneGoal(goal, robot, error, integral, derivative)
     %Init Control Parameters
 %    kThetaP = 2.5;
-    kVP = 150;
+    kVP = 1;
     kVI = 0;
     kVD = 0.05;
     %calculate new robot angle
