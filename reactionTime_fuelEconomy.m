@@ -2,7 +2,7 @@ clear all;
 close all;
 % sampling time of the leader
 leaderT = 0.001;
-for sim = 1:4
+for sim = 2:2
     % sampling time of the follower
     if(sim == 1)
         followerT = linspace(0.001,0.1,10);
@@ -200,7 +200,7 @@ for sim = 1:4
                                 % if the leader acheived 60 mph
                                 %if(abs(xRealLeader(3,index)-26) < 0.1)
                                 % if leader estimate reached steady state (0)
-                                if(abs(xLeader(5,index))<0.1)
+                                if((abs(uLeader(1,index))<0.1) && (abs(xLeader(5,index))< 0.1))
                                     % start applying the brakes
                                     emergencyBrakesOn = 1;
                                 end
@@ -214,7 +214,7 @@ for sim = 1:4
                     % Follower's braking condition
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     if(emergencyBrakesOn ==1)
-                        if( (xLeader(5,index) - sqrt(leaderP(5,5)) * threshold(k)) <= -brakingAcc(i))
+                        if((xLeader(5,index) - sqrt(leaderP(5,5)) * threshold(k)) <= -brakingAcc(i))
                             break;
                         end
                     end
@@ -395,7 +395,7 @@ for sim = 1:4
                 frequencyCounter = int32(followerT(i)/leaderT);
                 error(1) = sqrt((leader.x - follower.x)^2 +  (leader.y - follower.y)^2);
                 while(true)
-                    if(index == 10000)
+                    if(index == 50000)
                         break;
                     end
                     %calculate the actual state based on previous input.
@@ -533,6 +533,7 @@ for sim = 1:4
     end
     ylabel('False Positives');
     legend('90th Percentile','99th Percentile', '999th Percentile','90th Percentile','99th Percentile', '999th Percentile');
+    hold off;
     if(sim == 1)   
         % Follower Sampling Frequency
         saveas(gcf,'fig/followerSamplingTimeCombined.fig')
@@ -550,5 +551,24 @@ for sim = 1:4
         saveas(gcf,'fig/lidarVarianceCombined.fig')
         saveas(gcf,'fig/lidarVarianceCombined.jpg')
     end
-    hold off;
+    figure, hold on
+    for k = 1:3
+        errorbar(mean(falsePositive(:,:,k),2)', leaderT*1000*mean(reactionTime(:,:,k),2)',  leaderT*1000*std(reactionTime(:,:,k),0,2)')
+    end
+    legend('90th Percentile','99th Percentile', '999th Percentile','90th Percentile','99th Percentile', '999th Percentile');
+    ylabel('Reaction Time');
+    xlabel('False Positives');
+    hold off
+    saveas(gcf,strcat('fig/FP_RT',num2str(sim),'.fig'))
+    saveas(gcf,strcat('fig/FP_RT',num2str(sim),'.jpg'))
+    figure, hold on
+    for k = 1:3
+        errorbar(leaderT*1000*mean(reactionTime(:,:,k),2)', mean(falsePositive(:,:,k),2)',  std(falsePositive(:,:,k),0,2)')
+    end
+    legend('90th Percentile','99th Percentile', '999th Percentile','90th Percentile','99th Percentile', '999th Percentile');
+    ylabel('False Positives');
+    xlabel('Reaction Time');
+    hold off
+    saveas(gcf,strcat('fig/RT_FP',num2str(sim),'.fig'))
+    saveas(gcf,strcat('fig/RT_FP',num2str(sim),'.jpg'))
 end
