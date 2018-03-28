@@ -75,13 +75,12 @@ obdThread.start()
 t.start()
 seqNo = -1
 while True:
-   # 
-   # print(r)
+    global speed, latitude, longitude
     data, addr = sock.recvfrom(1024)
     dataArr = data.split(',')
     if seqNo != int(dataArr[0]):
         seqNo = int(dataArr[0])
-        logger.info(seqNo, speed, latitude, longitude, dataArr[1], dataArr[2], dataArr[3])
+        logger.info(str(seqNo) + ',' + speed + latitude + ',' + longitude + ',' + dataArr[1] + ',' + dataArr[2] + ',' + dataArr[3])
     
 #def timeHandler():
 #    logger.info(speed, leaderSpeed, str(packetCounter)

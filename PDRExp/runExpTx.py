@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys, subprocess, socket, serial, logging#,obd
-import time
+import time, threading
 from threading import Timer,Thread,Event
 from time import sleep
 
@@ -47,31 +47,31 @@ MESSAGE = "NODATA"
 ser = serial.Serial('/dev/ttyUSB0', 4800, timeout=1)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-conn = obd.OBD()
-c = obd.commands[1][13]
+#conn = obd.OBD()
+#c = obd.commands[1][13]
 speed = 'NODATA'
-long long seqNo = 0
+seqNo = 0
 
 def readOBD():
     global speed
     #speed = conn.query(c)
 
 def readGPS():
-    global latitude
-    global longitude
+    global latitude, longitude
+    latitude = 'NODATA'
+    longitude = 'NODATA'
     line = ser.readline()
     if "GPGGA" in line:
         latitude = line[18:26]
         longitude = line[31:39]
-    else:
-	    latitude = "NODATA"
-        longitude = "NODATA"
+	    
 
 def timerHandler():
-    global seqNo
-    MESSAGE = str(seqNo) +',' + latitude +',' longitude +',' + ','+ speed
+    global seqNo, longitude, latitude, speed
+    MESSAGE = str(seqNo) +',' + str(latitude) +','+ str(longitude) + ','+ speed
     sock.sendto(MESSAGE,(UDP_IP, UDP_PORT))
-    logger.info(seqNo, speed, latitude, longitude)
+    logger.info(str(seqNo)+','+ speed + ',' + latitude + ',' + longitude)
+    seqNo+=1
 
 t = perpetualTimer(0.01,timerHandler) #10 hz
 gpsThread = threading.Thread(target=readGPS)
