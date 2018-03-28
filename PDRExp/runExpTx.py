@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import obd, sys, subprocess, socket, serial
+import sys, subprocess, socket, serial, logging#,obd
 import time
 from threading import Timer,Thread,Event
 from time import sleep
@@ -23,8 +23,19 @@ class perpetualTimer():
    def cancel(self):
       self.thread.cancel()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-t = perpetualTimer(0.1,timerHandler)
+# create a file handler
+handler = logging.FileHandler('tx.log')
+handler.setLevel(logging.INFO)
+
+# create a logging format
+formatter = logging.Formatter('%(asctime)s , %(message)s')
+handler.setFormatter(formatter)
+
+# add the handlers to the logger
+logger.addHandler(handler)
 
 subprocess.Popen( "./setNetwork.sh 1", shell=True)
 sleep(1)
@@ -36,25 +47,35 @@ MESSAGE = "NODATA"
 ser = serial.Serial('/dev/ttyUSB0', 4800, timeout=1)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-#conn = obd.OBD()
-#c = obd.commands[1][13]
-speed = '20mph'
+conn = obd.OBD()
+c = obd.commands[1][13]
+speed = 'NODATA'
+long long seqNo = 0
 
-while True:
-    sleep(2)
-    startTime =int(round(time.time() * 1000))
-    if (startTime%1000) ==0:
-	t.start()
-	break
-def timerHandler():
-    #print str(int(round(time.time() * 1000)))
+def readOBD():
+    global speed
     #speed = conn.query(c)
-    for i in 1:100:
-        line = ser.readline()
-        if "GPGGA" in line:
-            latitude = line[18:26]
-            longitude = line[31:39]
-            MESSAGE = str(longitude)+',' +str(latitude) + speed
-        else:
-            MESSAGE = "NODATA,NODATA," + speed
-        sock.sendto(MESSAGE,(UDP_IP, UDP_PORT))
+
+def readGPS():
+    global latitude
+    global longitude
+    line = ser.readline()
+    if "GPGGA" in line:
+        latitude = line[18:26]
+        longitude = line[31:39]
+    else:
+	    latitude = "NODATA"
+        longitude = "NODATA"
+
+def timerHandler():
+    global seqNo
+    MESSAGE = str(seqNo) +',' + latitude +',' longitude +',' + ','+ speed
+    sock.sendto(MESSAGE,(UDP_IP, UDP_PORT))
+    logger.info(seqNo, speed, latitude, longitude)
+
+t = perpetualTimer(0.01,timerHandler) #10 hz
+gpsThread = threading.Thread(target=readGPS)
+gpsThread.start()
+obdThread = threading.Thread(target=readOBD)
+obdThread.start()
+t.start()
