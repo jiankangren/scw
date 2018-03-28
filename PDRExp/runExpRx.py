@@ -43,15 +43,13 @@ def readOBD():
     #speed = conn.query(c)
 
 def readGPS():
-    global latitude
-    global longitude
+    global latitude, longitude, ser
+    latitude = "NODATA"
+    longitude = "NODATA"
     line = ser.readline()
     if "GPGGA" in line:
         latitude = line[18:26]
         longitude = line[31:39]
-    else:
-	    latitude = "NODATA"
-        longitude = "NODATA"
 
 subprocess.Popen( "./setNetwork.sh 2", shell=True)
 sleep(1)
@@ -60,7 +58,7 @@ UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((UDP_IP, UDP_PORT))
-
+ser = serial.Serial('/dev/ttyUSB0'), 4800, timeout=1)
 speed = 'NODATA'
 leaderSpeed = 'NODATA'
 latitude = 'NODATA'
