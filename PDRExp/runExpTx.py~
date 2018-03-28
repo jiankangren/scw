@@ -1,7 +1,30 @@
 #!/usr/bin/python
 import obd, sys, subprocess, socket, serial
+import time
+from threading import Timer,Thread,Event
 from time import sleep
 
+
+class perpetualTimer():
+
+   def __init__(self,t,hFunction):
+      self.t=t
+      self.hFunction = hFunction
+      self.thread = Timer(self.t,self.handle_function)
+
+   def handle_function(self):
+      self.hFunction()
+      self.thread = Timer(self.t,self.handle_function)
+      self.thread.start()
+
+   def start(self):
+      self.thread.start()
+
+   def cancel(self):
+      self.thread.cancel()
+
+
+t = perpetualTimer(0.1,timerHandler)
 
 subprocess.Popen( "./setNetwork.sh 1", shell=True)
 sleep(1)
@@ -15,16 +38,24 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 #conn = obd.OBD()
 #c = obd.commands[1][13]
+speed = '20mph'
+
 while True:
-    #r = conn.query(c)
-    #print(r)
-    line = ser.readline()
-    if "GPGGA" in line:
-        latitude = line[18:26] 
-        longitude = line[31:39]
-        MESSAGE = str(longitude)+',' +str(latitude)
-    else:
-        MESSAGE = "NODATA"
-    sock.sendto(MESSAGE,(UDP_IP, UDP_PORT))
-    sleep(0.01)
+    sleep(2)
+    startTime =int(round(time.time() * 1000))
+    if (startTime%1000) ==0:
+	t.start()
+	break
+def timerHandler():
+    #print str(int(round(time.time() * 1000)))
+    #speed = conn.query(c)
+    for i in 1:100:
+        line = ser.readline()
+        if "GPGGA" in line:
+            latitude = line[18:26]
+            longitude = line[31:39]
+            MESSAGE = str(longitude)+',' +str(latitude) + speed
+        else:
+            MESSAGE = "NODATA,NODATA," + speed
+        sock.sendto(MESSAGE,(UDP_IP, UDP_PORT))
 
