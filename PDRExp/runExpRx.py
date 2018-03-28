@@ -2,9 +2,9 @@
 import obd, sys, subprocess, socket
 from time import sleep
 
-subprocess.Popen(["bash", "setNetwork.sh 2"])
-
-UDP_IP = "192.168.1.1"
+subprocess.Popen( "./setNetwork.sh 2", shell=True)
+sleep(1)
+UDP_IP = "192.168.1.2"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -18,4 +18,4 @@ while True:
     data, addr = sock.recvfrom(1024)
     print (data)
     sleep(0.01)
-
+ 	

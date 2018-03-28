@@ -20,7 +20,7 @@ while True:
     #print(r)
     line = ser.readline()
     if "GPGGA" in line:
-        latitude = line[18:26]
+        latitude = line[18:26] 
         longitude = line[31:39]
         MESSAGE = str(longitude)+',' +str(latitude)
     else:
