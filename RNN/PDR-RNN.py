@@ -3,9 +3,12 @@ import numpy
 import matplotlib.pyplot as plt
 from pandas import read_csv
 import math
+import os
+import os.path
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
+from keras.models import model_from_json
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 # convert an array of values into a dataset matrix
@@ -42,16 +45,41 @@ testX, testY = create_dataset(testInput, testOutput, look_back)
 # reshape input to be [samples, time steps, features]
 trainX = numpy.reshape(trainX, (trainX.shape[0], trainX.shape[1], 1))
 testX = numpy.reshape(testX, (testX.shape[0], testX.shape[1], 1))
-# create and fit the LSTM network
-batch_size = 1
-model = Sequential()
-#model.add(LSTM(4, batch_input_shape=(batch_size, look_back, 1), stateful=True, return_sequences=True))
-model.add(LSTM(4, batch_input_shape=(batch_size, look_back, 1), stateful=True))
-model.add(Dense(1))
+
+# check if there a saved model exists
+modelFilePath='./model.json'
+if os.path.isfile(modelFilePath)
+	# create and fit the LSTM network
+	batch_size = 1
+	model = Sequential()
+	#model.add(LSTM(4, batch_input_shape=(batch_size, look_back, 1), stateful=True, return_sequences=True))
+	model.add(LSTM(4, batch_input_shape=(batch_size, look_back, 1), stateful=True))
+	model.add(Dense(1))
+	print("Created model")
+else:
+	# load json and create model
+	json_file = open('model.json', 'r')
+	loaded_model_json = json_file.read()
+	json_file.close()
+	loaded_model = model_from_json(loaded_model_json)
+	# load weights into new model
+	loaded_model.load_weights("model.h5")
+	print("Loaded model from disk")
+
+
+
+
 model.compile(loss='mean_squared_error', optimizer='adam')
 for i in range(100):
 	model.fit(trainX, trainY, epochs=1, batch_size=batch_size, verbose=2, shuffle=False)
 	model.reset_states()
+	# serialize model to JSON
+	model_json = model.to_json()
+	with open("model.json", "w") as json_file:
+    json_file.write(model_json)
+	# serialize weights to HDF5
+	model.save_weights("model.h5")
+	print("Saved model to disk")
 # make predictions
 trainPredict = model.predict(trainX, batch_size=batch_size)
 model.reset_states()
