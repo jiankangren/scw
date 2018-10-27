@@ -1,0 +1,123 @@
+ - 30s - loss: 0.0211
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0047
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0025
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0017
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0015
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0013
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0012
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0010
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 0.0010
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 8.1020e-04
+Saved model to disk
+Train Score: 0.03 RMSE
+Test Score: 0.15 RMSE
+
+C:\Users\mae3tb\Documents\GitHub\scw\RNN\src>python ICCPS.py  --training-input="exp2_train_post.csv" --exp-name="exp2-mode3" --mode=3 --epoch-count=10
+Using TensorFlow backend.
+2018-10-12 10:56:40.492436: I T:\src\github\tensorflow\tensorflow\core\platform\cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2
+2018-10-12 10:56:40.689070: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1405] Found device 0 with properties:
+name: TITAN V major: 7 minor: 0 memoryClockRate(GHz): 1.455
+pciBusID: 0000:01:00.0
+totalMemory: 12.00GiB freeMemory: 9.67GiB
+2018-10-12 10:56:40.694417: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1484] Adding visible gpu devices: 0
+2018-10-12 10:56:41.387265: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:965] Device interconnect StreamExecutor with strength 1 edge matrix:
+2018-10-12 10:56:41.390362: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:971]      0
+2018-10-12 10:56:41.392775: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:984] 0:   N
+2018-10-12 10:56:41.394399: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1097] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 9333 MB memory) -> physical GPU (device: 0, name: TITAN V, pci bus id: 0000:01:00.0, compute capability: 7.0)
+Loaded model from disk
+Epoch 1/1
+ - 28s - loss: 8.6166e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 7.9127e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 7.5173e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 6.4352e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 6.4416e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 5.8232e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 5.9395e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 6.2458e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 5.7250e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 4.8848e-04
+Saved model to disk
+Train Score: 0.02 RMSE
+Test Score: 0.15 RMSE
+
+C:\Users\mae3tb\Documents\GitHub\scw\RNN\src>python ICCPS.py  --training-input="exp2_train_post.csv" --exp-name="exp2-mode3" --mode=3 --epoch-count=10
+Using TensorFlow backend.
+2018-10-12 11:02:21.224934: I T:\src\github\tensorflow\tensorflow\core\platform\cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2
+2018-10-12 11:02:21.411911: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1405] Found device 0 with properties:
+name: TITAN V major: 7 minor: 0 memoryClockRate(GHz): 1.455
+pciBusID: 0000:01:00.0
+totalMemory: 12.00GiB freeMemory: 9.67GiB
+2018-10-12 11:02:21.417596: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1484] Adding visible gpu devices: 0
+2018-10-12 11:02:22.107332: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:965] Device interconnect StreamExecutor with strength 1 edge matrix:
+2018-10-12 11:02:22.110400: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:971]      0
+2018-10-12 11:02:22.112668: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:984] 0:   N
+2018-10-12 11:02:22.115032: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1097] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 9333 MB memory) -> physical GPU (device: 0, name: TITAN V, pci bus id: 0000:01:00.0, compute capability: 7.0)
+Loaded model from disk
+Epoch 1/1
+ - 28s - loss: 5.2021e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 5.0151e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 4.7444e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 4.3589e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 4.3517e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 4.1618e-04
+Saved model to disk
+Epoch 1/1
+ - 27s - loss: 4.1510e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 4.0723e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 3.9829e-04
+Saved model to disk
+Epoch 1/1
+ - 26s - loss: 3.9605e-04
+Saved model to disk
+Train Score: 0.02 RMSE
+Test Score: 0.15 RMSE

@@ -1,0 +1,30 @@
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0171
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0170
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0167
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0165
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0161
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0158
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0153
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0148
+Saved model to disk
+Epoch 1/1
+ - 21s - loss: 0.0144
+Saved model to disk
+Train Score: 0.12 RMSE
+Test Score: 0.12 RMSE
