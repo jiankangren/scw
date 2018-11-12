@@ -31,10 +31,10 @@ Y = []
 #X, Y = make_moons(noise=0.2, random_state=0, n_samples=1000)
 
 
-dataframe = read_csv('exp2_train_post.csv', usecols=[*range(0,435)], header=None, sep=',', engine='python')
+dataframe = read_csv('../dataset/exp2_train_post.csv', usecols=[*range(0,435)], header=None, sep=',', engine='python')
 X = dataframe.values
 X = X.astype('float32')
-dataframe = read_csv('exp2_train_post.csv', usecols=[435], header=None, sep=',', engine='python')
+dataframe = read_csv('../dataset/exp2_train_post.csv', usecols=[435], header=None, sep=',', engine='python')
 Y = dataframe.values
 Y = Y.transpose()
 Y = Y.astype('float32')

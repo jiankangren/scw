@@ -135,5 +135,5 @@ def train(arglist):
 	plt.show()
 
 if __name__ == '__main__':
-    arglist = parse_args()
-    train(arglist)
+	arglist = parse_args()
+	train(arglist)

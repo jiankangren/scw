@@ -164,51 +164,51 @@ def train(arglist):
 
 		# plot results
 		## plot prediction vs groundtruth of training data
-		#time = 0.02 * np.arange(0, len(trainX))
+		time = 0.02 * np.arange(0, len(trainX))
 
-		#plt.figure()
-		#plt.xlabel('Time (sec)')
-		#plt.ylabel('PDR (%)')
-		#plt.plot(time, 100* trainY)
-		#plt.show()
+		plt.figure()
+		plt.xlabel('Time (sec)')
+		plt.ylabel('PDR (%)')
+		plt.plot(time, 100* trainY)
+		plt.show()
 
-		#plt.figure()
-		#plt.xlabel('Time (sec)')
-		#plt.ylabel('PDR (%)')
-		#plt.plot(time, 100* trainY)
-		#plt.plot(time, 100 *trainPredict)
-		#plt.legend(['Ground Truth', 'Predictions'])
-		#plt.show()
-		## plot prediction vs groundtruth of testing data
-		#time = 0.02 * np.arange(0, len(testX))
-		#plt.figure()
-		#plt.xlabel('Time (sec)')
-		#plt.ylabel('PDR (%)')
-		#plt.plot(time, 100*testY)
-		#plt.plot(time, 100 *testPredict)
-		#plt.legend(['Ground Truth', 'Predictions'])
-		#plt.show()
-		## plot loss
-		#plt.figure()
-		#plt.xlabel('Number of Epochs')
-		#plt.ylabel('Training Loss Value')
-		#plt.plot(np.arange(0, len(data['loss'])), data['loss'])
-		#plt.show()
-		## plot loss
-		#plt.figure()
-		#plt.xlabel('Number of Epochs')
-		#plt.ylabel('RMSE')
-		#plt.plot(np.arange(0, len(data['train_score'])), data['train_score'])
-		#plt.plot(data['test_score'])
-		#plt.legend(['Training', 'Validation'])
-		#plt.show()
+		plt.figure()
+		plt.xlabel('Time (sec)')
+		plt.ylabel('PDR (%)')
+		plt.plot(time, 100* trainY)
+		plt.plot(time, 100 *trainPredict)
+		plt.legend(['Ground Truth', 'Predictions'])
+		plt.show()
+		# plot prediction vs groundtruth of testing data
+		time = 0.02 * np.arange(0, len(testX))
+		plt.figure()
+		plt.xlabel('Time (sec)')
+		plt.ylabel('PDR (%)')
+		plt.plot(time, 100*testY)
+		plt.plot(time, 100 *testPredict)
+		plt.legend(['Ground Truth', 'Predictions'])
+		plt.show()
+		# plot loss
+		plt.figure()
+		plt.xlabel('Number of Epochs')
+		plt.ylabel('Training Loss Value')
+		plt.plot(np.arange(0, len(data['loss'])), data['loss'])
+		plt.show()
+		#plot loss
+		plt.figure()
+		plt.xlabel('Number of Epochs')
+		plt.ylabel('RMSE')
+		plt.plot(np.arange(0, len(data['train_score'])), data['train_score'])
+		plt.plot(data['test_score'])
+		plt.legend(['Training', 'Validation'])
+		plt.show()
 		#plot cdf
 		error = [math.fabs(100*(x - y)) for x, y in zip(trainPredict, trainY)]
 		plt.figure()
 		plt.xlabel('Absolute error of PDR prediction over the validation data')
 		plt.ylabel('CDF')
 		plt.hist(error, normed=1, cumulative=True, label='CDF', histtype='step',  bins=1000)
-		#plt.show()
+		plt.show()
 
 
 		for i in range(3,4):
